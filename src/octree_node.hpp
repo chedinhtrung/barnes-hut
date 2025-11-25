@@ -36,10 +36,24 @@ public:
         for (int i = 0; i < 8; ++i) {
             if(children[i] != nullptr) {
                 return false;
-            };
+            }
         }
         return true;
     }
 
     void insert(Body* b);
 };
+
+/*
+Compute a cubic region that contains all bodies
+
+This will be used as the bounds for the root octree node
+*/
+Region computeRootRegion(const std::vector<Body>& bodies);
+
+/*
+Decide which child octant 0 -> 7 of a region contains a given body (here we only are about the position)
+
+We'll use this inside OctreeNode::insert to choose the correct child
+*/
+int getChildIndex(const Region& region, const Vec3& point);
