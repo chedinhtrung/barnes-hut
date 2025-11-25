@@ -13,6 +13,9 @@ public:
     // Advance in time
     void step(double dt);
 
+    void computeForcesBarnesHut(double theta); // Compute gravitational forces using the Barnes-Hut octree
+    void stepBarnesHut(double dt, double theta); // Advance in time using Barnes-Hut
+
     // Getter for bodies
     const std::vector<Body>& getBodies() const {
         return bodies;

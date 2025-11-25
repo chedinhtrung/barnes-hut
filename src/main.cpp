@@ -11,6 +11,7 @@ int main() {
     const double G = 1.0; // Gravitational constant, scaled units, don't use the real G here because it might lead to underflow
     const double dt = 0.01; // Timestep size
     const int steps = 1000; // Number of timesteps to simulate
+    const double theta = 0.5; // Threshold for Barnes-Hut
 
     // 2. Generate initial bodies
     std::vector<Body> bodies = randomInitialization(
@@ -21,71 +22,36 @@ int main() {
         1234 // Random seed
     );
 
-    /*
-    Compate total mass and center of mass calculated from 1. Direct computation from bodies and 2. Barnes-Hut octree for debugging
+    // 3. Create two Simulation objects with the same initial state
+    Simulation simNaive(bodies, G);
+    Simulation simBH(bodies, G);
 
-    The two methods should give very close results
-    */
-
-    // Compute total mass and center of mass directly from bodies
-    double directMass = 0.0;
-    Vec3 directCOM{0.0, 0.0, 0.0};
-
-    for (const Body& body : bodies) {
-        directMass += body.mass;
-        directCOM += body.position * body.mass;  // sum(m_i * x_i)
-    }
-
-    if (directMass > 0.0) {
-        directCOM *= (1.0 / directMass);   // divide by total mass
-    }
-
-    // Build the Barnes-Hut octree
-    OctreeNode* root = buildOctree(bodies);
-
-    if (root == nullptr) {
-        std::cout << "No bodies, octree is empty.\n";
-        return 0;
-    }
-
-    // Comparison
-    std::cout << "========== Octree debug check ==========\n";
-    std::cout << "Number of bodies: " << bodies.size() << "\n\n";
-
-    std::cout << "Direct total mass: " << directMass << "\n";
-    std::cout << "Tree total mass: " << root->mass << "\n\n";
-
-    std::cout << "Direct center of mass: ("
-              << directCOM.x << ", "
-              << directCOM.y << ", "
-              << directCOM.z << ")\n";
-
-    std::cout << "Tree center of mass: ("
-              << root->centerOfMass.x << ", "
-              << root->centerOfMass.y << ", "
-              << root->centerOfMass.z << ")\n\n";
-
-
-    // 3. Create the Simulation object
-    // Simulation sim(std::move(bodies), G);
-    Simulation sim(bodies, G);
-
-    // 4. Simulation
+    // 4. Run both simulations side-by-side
     for (int step = 0; step < steps; ++step) {
-        sim.step(dt);
+        // Advance one step with each method
+        simNaive.step(dt); // Brute-force O(N^2)
+        simBH.stepBarnesHut(dt, theta); // Barnes-Hut
 
-        // Dummy logging
+        // Dummy logging every 100 steps
         if (step % 100 == 0) {
-            const std::vector<Body>& bodies_ = sim.getBodies();
+            const auto& bodiesNaive = simNaive.getBodies();
+            const auto& bodiesBH = simBH.getBodies();
 
-            if(!bodies_.empty()) {
-                const Body& first_body = bodies_[0];
+            if (!bodiesNaive.empty() && !bodiesBH.empty()) {
+                const Body& bNaive = bodiesNaive[0];
+                const Body& bBH = bodiesBH[0];
 
-                std::cout << "Step " << step
-                          << " | First body position = ("
-                          << first_body.position.x << ", "
-                          << first_body.position.y << ", "
-                          << first_body.position.z << ")\n";
+                std::cout << "Step " << step << "\n";
+
+                std::cout << "  Naive first body position = ("
+                          << bNaive.position.x << ", "
+                          << bNaive.position.y << ", "
+                          << bNaive.position.z << ")\n";
+
+                std::cout << "  Barnes-Hut first body position = ("
+                          << bBH.position.x << ", "
+                          << bBH.position.y << ", "
+                          << bBH.position.z << ")\n\n";
             }
         }
     }

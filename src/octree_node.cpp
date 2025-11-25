@@ -1,6 +1,7 @@
 #include "octree_node.hpp"
 #include <algorithm>
 #include <limits>
+#include <cmath>
 
 void OctreeNode::insert(Body* b) {
     /*
@@ -222,4 +223,74 @@ OctreeNode* buildOctree(std::vector<Body>& bodies) {
 
     // 4. Return the root
     return root;
+}
+
+void computeForceFromNode(const OctreeNode* node, Body& b, double theta, double G) {
+    if (node == nullptr) {
+        return;
+    }
+
+    if (node->mass <= 0.0) {
+        return;
+    }
+
+    // Vector from body b to the node's center of mass
+    Vec3 r = node->centerOfMass - b.position;
+
+    // Calculate distance from node to body b
+    const double softening = 1e-5; // Avoid division by 0 
+    double dist2 = norm2(r) + softening * softening;
+    double dist = std::sqrt(dist2);
+
+    // Avoid division by 0 if node is in the exact same position as b
+    if (dist == 0.0) {
+        return;
+    }
+
+    /*
+    Case 1: Node is leaf node
+
+    Calculate the force exerted by the current node on 'b' and add this amount to b’s net force
+    */
+    if (node->isLeaf()) {
+        // If this leaf's body is exactly the same as 'b', skip it because a body does not exert force on itself
+        if (node->body == &b || node->body == nullptr) {
+            return;
+        }
+
+        // Treat the node as a single body at centerOfMass with mass = node->mass & compute gravitational force in vector form: fVec = (G * m1 * m2 / |r|^3) * r
+        double invDist3 = 1.0 / (dist2 * dist);
+        double f = G * b.mass * node->mass * invDist3;
+        Vec3 fVec = f * r; // Force in vector form
+
+        // Add this contribution to b.force
+        b.force += fVec;
+        return;
+    }
+
+    /*
+    Case 2: Node is internal node
+
+    Calculate the ratio s / d. If s / d < theta, treat this internal node as a single body, and calculate the force it exerts on body 'b', 
+    and add this amount to b’s net force.
+    */
+    double s = 2.0 * node->bounds.halfSize;
+    double ratio = s / dist;
+
+    if (ratio < theta) {
+        // Treat the whole cell as one body at its center of mass
+        double invDist3 = 1.0 / (dist2 * dist);
+        double f = G * b.mass * node->mass * invDist3;
+        Vec3 fVec = f * r;
+        b.force += fVec;
+
+        return;
+    }
+
+    // If s / d > theta, recurse to children
+    for (int i = 0; i < 8; ++i) {
+        if (node->children[i] != nullptr) {
+            computeForceFromNode(node->children[i], b, theta, G);
+        }
+    }
 }

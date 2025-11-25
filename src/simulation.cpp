@@ -1,4 +1,5 @@
 #include "simulation.hpp"
+#include "octree_node.hpp"
 #include <cmath>
 
 Simulation::Simulation(std::vector<Body> bodies, double G): bodies(std::move(bodies)), G(G) {}
@@ -39,5 +40,41 @@ void Simulation::step(double dt) {
 
         body.velocity += acceleration * dt; // v_new = v_old + a * dt
         body.position += body.velocity * dt; // x_new = x_old + v * dt
+    }
+}
+
+void Simulation::computeForcesBarnesHut(double theta) {
+    // 1. Clear force on all bodies
+    for (Body& b : bodies) {
+        b.force = Vec3{0.0, 0.0, 0.0};
+    }
+
+    // 2. Build the octree
+    OctreeNode* root = buildOctree(bodies);
+
+    if (root == nullptr) {
+        return; // No bodies
+    }
+
+    // 3. Compute forces for each body using Barnes-Hut
+    for (Body& b : bodies) {
+        computeForceFromNode(root, b, theta, G);
+    }
+
+    // Issue for Steve: Delete the octree
+}
+
+void Simulation::stepBarnesHut(double dt, double theta) {
+    // 1. Compute forces using Barnes-Hut
+    computeForcesBarnesHut(theta);
+
+    // 2. Update velocities
+    for (Body& b : bodies) {
+        b.velocity += (b.force * (1.0 / b.mass)) * dt;
+    }
+
+    // 3. Update position
+    for (Body& b : bodies) {
+        b.position += b.velocity * dt;
     }
 }
