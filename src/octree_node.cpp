@@ -79,32 +79,32 @@ int getChildIndex(const Region& region, const Vec3& point) {
         return 0;
     }
 
-    if ( right && !top && !front) {
+    if (right && !top && !front) {
         // Right, bottom, back
         return 1;
     }
 
-    if (!right &&  top && !front) {
+    if (!right && top && !front) {
         // Left, top, back
         return 2;
     }
 
-    if ( right &&  top && !front) {
+    if (right && top && !front) {
         // Right, top, back
         return 3;
     }
 
-    if (!right && !top &&  front) {
+    if (!right && !top && front) {
         // Left, bottom, front
         return 4;
     }
 
-    if ( right && !top &&  front) {
+    if (right && !top && front) {
         // Right, bottom, front
         return 5;
     }
 
-    if (!right &&  top &&  front) {
+    if (!right && top && front) {
         // Left, top, front
         return 6;
     }
