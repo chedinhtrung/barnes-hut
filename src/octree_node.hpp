@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "vec3.hpp"
 #include "body.hpp"
 #include "region.hpp"
@@ -34,8 +35,8 @@ public:
         // Node is leaf is all children are nullptr
         for (int i = 0; i < 8; ++i) {
             if(children[i] != nullptr) {
-                return false
-            }
+                return false;
+            };
         }
         return true;
     }
