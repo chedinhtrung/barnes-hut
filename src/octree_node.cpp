@@ -3,7 +3,98 @@
 #include <limits>
 
 void OctreeNode::insert(Body* b) {
+    /*
+    Case 1: Leaf node that is currently empty
+    */
+    if (isLeaf() && body == nullptr) {
+        // Store the body in this node
+        body = b;
 
+        // For a single body: Mass = body mass, center of mass = body position
+        mass = b->mass;
+        centerOfMass = b->position;
+        return;
+    }
+
+    /*
+    Case 2: Node is a leaf, but already has one body
+
+    We subdivide this region into 8 children and move bodies downwards into the correct child octants
+    */
+    if (isLeaf() && body != nullptr) {
+        // Save the existing body
+        Body* oldBody = body;
+
+        // This node will become an internal node, so it no longer directly stores a body pointer
+        body = nullptr;
+
+        // 1. Create 8 children, one for each octant
+        for (int i = 0; i < 8; ++i) {
+            Region childReg = bounds.childRegion(i);
+            children[i] = new OctreeNode(childReg);
+        }
+
+        // 2. Insert the old body into the appropriate child
+        int oldIndex = getChildIndex(bounds, oldBody->position);
+        children[oldIndex]->insert(oldBody);
+
+        // 3. Insert the new body into the appropriate child
+        int newIndex = getChildIndex(bounds, b->position);
+        children[newIndex]->insert(b);
+
+        // 4. Update the mass and center of mass of this node based on the children
+        mass = 0.0;
+        centerOfMass = Vec3{0.0, 0.0, 0.0};
+
+        for (int i = 0; i < 8; ++i) {
+            if (children[i] != nullptr && children[i]->mass > 0.0) {
+                mass += children[i]->mass;
+                centerOfMass += children[i]->centerOfMass * children[i]->mass;
+            }
+        }
+
+        if (mass > 0.0) {
+            centerOfMass *= (1.0 / mass);
+        }
+
+        return;
+    }
+
+    /*
+    Case 3: Node is an internal node (has children)
+
+    We have already subdivided this node before, so we simply choose the correct child and recurse
+    */
+    {
+        // Determine which child should receive this body
+        int idx = getChildIndex(bounds, b->position);
+
+        // If that child doesn't exist yet, create it
+        if (children[idx] == nullptr) {
+            Region childReg = bounds.childRegion(idx);
+            children[idx] = new OctreeNode(childReg);
+        }
+
+        // Insert into the child node recursively
+        children[idx]->insert(b);
+
+        // After inserting into a child, update this node's mass & center of mass
+        mass = 0.0;
+        centerOfMass = Vec3{0.0, 0.0, 0.0};
+
+        for (int i = 0; i < 8; ++i) {
+            if (children[i] != nullptr && children[i]->mass > 0.0) {
+                mass += children[i]->mass;
+                centerOfMass += children[i]->centerOfMass * children[i]->mass;
+            }
+        }
+
+        if (mass > 0.0) {
+            centerOfMass *= (1.0 / mass);
+        }
+
+        return;
+    }
 }
 
 Region computeRootRegion(const std::vector<Body>& bodies) {
