@@ -204,3 +204,22 @@ int getChildIndex(const Region& region, const Vec3& point) {
     return 7;
 }
 
+OctreeNode* buildOctree(std::vector<Body>& bodies) {
+    if (bodies.empty()) {
+        return nullptr;
+    }
+
+    // 1. Compute bounding region of all bodies
+    Region rootRegion = computeRootRegion(bodies);
+
+    // 2. Create root node
+    OctreeNode* root = new OctreeNode(rootRegion);
+
+    // 3. Insert each body into the octree
+    for (Body& body: bodies) {
+        root->insert(&body);
+    }
+
+    // 4. Return the root
+    return root;
+}

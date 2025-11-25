@@ -57,3 +57,8 @@ Decide which child octant 0 -> 7 of a region contains a given body (here we only
 We'll use this inside OctreeNode::insert to choose the correct child
 */
 int getChildIndex(const Region& region, const Vec3& point);
+
+/*
+Build an octree for the given bodies & return a pointer to the root node
+*/
+OctreeNode* buildOctree(std::vector<Body>& bodies);

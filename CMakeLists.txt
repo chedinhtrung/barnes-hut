@@ -8,4 +8,5 @@ add_executable(barnes_hut
     src/main.cpp
     src/simulation.cpp
     src/initial_conditions.cpp
+    src/octree_node.cpp
 )
