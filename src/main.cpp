@@ -9,19 +9,20 @@
 int main() {
     // 1. Simulation settings
     const int N = 100; // Number of bodies
-    const double G = 1.0; // Gravitational constant, scaled units, don't use the real G here because it might lead to underflow
-    const double dt = 0.002; // Timestep size
-    const int steps = 2000; // Number of timesteps to simulate
+    const double G = 1; // Gravitational constant, scaled units, don't use the real G here because it might lead to underflow
+    const double dt = 0.01; // Timestep size
+    const int steps = 5000; // Number of timesteps to simulate
     const double theta = 0.5; // Threshold for Barnes-Hut
 
     // 2. Generate initial bodies
-    std::vector<Body> bodies_bh = randomInitialization(
+    std::vector<Body> bodies_bh = galaxyInitialization(
         N,
-        1.0, 10.0, // Mass range: [1, 10]
-        10.0, // Position range: [-10, 10]
-        0.1, // Velocity range: [-0.1, 0.1]
+        0.1, 0.5, // Mass range: [1, 10]
+        30, // Position range: [-10, 10]
+        5, // Velocity range: [-0.1, 0.1]
         1234 // Random seed
     );
+    
     // 3. Create two Simulation objects with the same initial state
     Simulation simBH(bodies_bh, G);
 

@@ -13,3 +13,14 @@ std::vector<Body> randomInitialization(
     double velocityRange,
     unsigned int seed = 1234
 );
+
+/* 
+returns a vector containing 2N bodies divided into 2 galaxies swirling
+*/
+std::vector<Body> galaxyInitialization(
+    std::size_t N,
+    float massMin, float massMax,
+    double positionRange,
+    double velocityRange,
+    unsigned int seed = 1234
+);
