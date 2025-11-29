@@ -147,62 +147,32 @@ Region computeRootRegion(const std::vector<Body>& bodies) {
 /*
 Decide which child octant 0 -> 7 of the region contains the given point
 
-We use the same convention as in Region::childRegion:
+We use the following convention for the 8 child cubes:
 
-              z+ (front)
-              ^
-        6-----7
+        ^ z
+        |      
+        4-----6
        /|    /|
-      2-----3 |
-      | 4---|-5 --> x+ (right)
+      5-----7 |
+      | 0---|-2 --> y 
       |/    |/
-      0-----1
+      1-----3               
      /
-     v
-     y+ (top)
+     x
+
+Start bottom left back. binary coords zyx. move in that direction -> that coord is 1. For example, 111_bin = 7_dec
 */
 int getChildIndex(const Region& region, const Vec3& point) {
-    bool right = (point.x >= region.center.x);
-    bool top   = (point.y >= region.center.y);
-    bool front = (point.z >= region.center.z);
+    bool dx = (point.x >= region.center.x);
+    bool dy   = (point.y >= region.center.y);
+    bool dz = (point.z >= region.center.z);
 
-    if (!right && !top && !front) {
-        // Left, bottom, back
-        return 0;
-    }
-
-    if (right && !top && !front) {
-        // Right, bottom, back
-        return 1;
-    }
-
-    if (!right && top && !front) {
-        // Left, top, back
-        return 2;
-    }
-
-    if (right && top && !front) {
-        // Right, top, back
-        return 3;
-    }
-
-    if (!right && !top && front) {
-        // Left, bottom, front
-        return 4;
-    }
-
-    if (right && !top && front) {
-        // Right, bottom, front
-        return 5;
-    }
-
-    if (!right && top && front) {
-        // Left, top, front
-        return 6;
-    }
-
-    // Last remaining case: right && top && front -> index 7
-    return 7;
+    int index = 0;
+    index |= (dz << 2); 
+    index |= (dy << 1);
+    index |= dx;
+    return index;
+    
 }
 
 OctreeNode* buildOctree(std::vector<Body>& bodies) {

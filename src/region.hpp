@@ -30,17 +30,18 @@ struct Region {
 
     We use the following convention for the 8 child cubes:
 
-              z+ (front)
-              ^
-        6-----7
+        ^ z
+        |      
+        4-----6
        /|    /|
-      2-----3 |
-      | 4---|-5 --> x+ (right)
+      5-----7 |
+      | 0---|-2 --> y 
       |/    |/
-      0-----1
+      1-----3               
      /
-     v
-     y+ (top)
+     x
+
+    Start bottom left back. binary coords zyx. move in that direction -> that coord is 1. For example, 111_bin = 7_dec
     
     This correspond to the ordering:
         Child 0: (-1, -1, -1)
