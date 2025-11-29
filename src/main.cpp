@@ -30,9 +30,8 @@ int main() {
 
     const auto& bodiesBH = simBH.getBodies();
     // Write the head of the dataframe
-    for (const Body& body : bodiesBH){
-        fprintf(barneshut_csv, "step, time, body, m, x, y, z, vx, vy, vz");
-    }
+    fprintf(barneshut_csv, "step,time,body,m,x,y,z,vx,vy,vz\n");
+    
 
     // 4. Run both simulations side-by-side
     for (int step = 0; step < steps; ++step) {
@@ -42,7 +41,7 @@ int main() {
         for (int j=0; j<bodies_bh.size(); j++){
                 const Body b = bodiesBH[j];
                                     //"step, time, body, m, x, y, z, vx, vy, vz"
-                fprintf(barneshut_csv, "%i, %.4f, %i, %.2f, %.4f, %4f, %4f, %4f, %4f, %4f \n",
+                fprintf(barneshut_csv, "%i,%.4f,%i,%.2f,%.4f,%4f,%4f,%4f,%4f,%4f\n",
                                         step, step*dt, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
         }
         // Dummy logging every 100 steps
