@@ -4,6 +4,7 @@
 /*
 Vec3 type for forces, positions and velocities
 */
+
 struct Vec3 {
     double x{};
     double y{};
@@ -36,28 +37,22 @@ struct Vec3 {
 
         return *this;
     }
+
+    Vec3& normalize();
 };
 
-inline Vec3 operator+(Vec3 a, const Vec3& b) {
-    return a += b;
-}
+Vec3 operator+(Vec3 a, const Vec3& b);
 
-inline Vec3 operator-(Vec3 a, const Vec3& b) {
-    return a -= b;
-}
+Vec3 operator-(Vec3 a, const Vec3& b);
 
-inline Vec3 operator*(Vec3 a, double scalar) {
-    return a *= scalar;
-}
+Vec3 operator*(Vec3 a, double scalar);
 
-inline Vec3 operator*(double scalar, Vec3 a) {
-    return a *= scalar;
-}
+Vec3 operator*(double scalar, Vec3 a);
 
-inline double norm2(const Vec3& v) {
-    return v.x * v.x + v.y * v.y + v.z * v.z;
-}
+Vec3 cross(Vec3 a, Vec3 b);
 
-inline double norm(const Vec3& v) {
-    return std::sqrt(norm2(v));
-}
+double norm2(const Vec3& v);
+
+double norm(const Vec3& v);
+
+   
