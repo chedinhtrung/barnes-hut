@@ -264,3 +264,10 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta, double 
         }
     }
 }
+
+OctreeNode::~OctreeNode(){
+    // recursively delete all the nodes in the tree (dont delete Bodies!)
+    for (OctreeNode* child:children){
+        delete(child);
+    }
+}

@@ -32,7 +32,7 @@ public:
     Check if this node is a leaf node
     */
     bool isLeaf() const {
-        // Node is leaf is all children are nullptr
+        // Node is leaf if all children are nullptr
         for (int i = 0; i < 8; ++i) {
             if(children[i] != nullptr) {
                 return false;
@@ -42,6 +42,8 @@ public:
     }
 
     void insert(Body* b);
+
+    ~OctreeNode();
 };
 
 /*

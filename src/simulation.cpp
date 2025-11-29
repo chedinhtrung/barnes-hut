@@ -61,7 +61,7 @@ void Simulation::computeForcesBarnesHut(double theta) {
         computeForceFromNode(root, b, theta, G);
     }
 
-    // Issue for Steve: Delete the octree
+    delete(root);
 }
 
 void Simulation::stepBarnesHut(double dt, double theta) {
