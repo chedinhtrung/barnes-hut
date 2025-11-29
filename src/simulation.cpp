@@ -5,7 +5,7 @@
 Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath): bodies(std::move(bodies)){
     if (csv_filepath == nullptr){return;}
     // Open csv file
-    csv_file = fopen("../results/barnes-hut.csv", "w");
+    csv_file = fopen(csv_filepath, "w");
     // Write the head of the dataframe
     fprintf(csv_file, "step,time,body,m,x,y,z,vx,vy,vz\n");
 }

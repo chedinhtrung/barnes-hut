@@ -13,7 +13,15 @@ int main() {
     const double theta = 0.5; // Threshold for Barnes-Hut
 
     // 2. Generate initial bodies
-    std::vector<Body> bodies = galaxyInitialization(
+    std::vector<Body> bodies_naive = galaxyInitialization(
+        N,
+        0.1, 0.5, // Mass range: [1, 10]
+        30, // Position range: [-10, 10]
+        5, // Velocity range: [-0.1, 0.1]
+        1234 // Random seed
+    );
+
+    std::vector<Body> bodies_bh = galaxyInitialization(
         N,
         0.1, 0.5, // Mass range: [1, 10]
         30, // Position range: [-10, 10]
@@ -22,28 +30,19 @@ int main() {
     );
     
     // 3. Create two Simulation objects with the same initial state
-    Simulation sim(bodies, BH_CSV);
+    Simulation simBH(bodies_bh, BH_CSV);
+    Simulation simNaive(bodies_naive, NAIVE_CSV);
     
 
     // 4. Run both simulations side-by-side
     for (int step = 0; step < steps; ++step) {
         // Advance one step with each method
-        sim.stepBarnesHut(theta); // Barnes-Hut
+        simBH.stepBarnesHut(theta); // Barnes-Hut
+        simNaive.step(); // Naive
 
         // Dummy logging every 100 steps
         if (step % 100 == 0) {
-            const auto& bodiesBH = sim.getBodies();
-
-            if (!bodiesBH.empty()) {
-                const Body& bBH = bodiesBH[0];
-
-                std::cout << "Step " << step << "\n";
-
-                std::cout << "  Barnes-Hut first body position = ("
-                          << bBH.position.x << ", "
-                          << bBH.position.y << ", "
-                          << bBH.position.z << ")\n\n";
-            }
+            printf("Step: %i \n", step);
         }
     }
 
