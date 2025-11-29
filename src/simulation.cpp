@@ -2,7 +2,13 @@
 #include "octree_node.hpp"
 #include <cmath>
 
-Simulation::Simulation(std::vector<Body> bodies, double G): bodies(std::move(bodies)), G(G) {}
+Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath): bodies(std::move(bodies)){
+    if (csv_filepath == nullptr){return;}
+    // Open csv file
+    csv_file = fopen("../results/barnes-hut.csv", "w");
+    // Write the head of the dataframe
+    fprintf(csv_file, "step,time,body,m,x,y,z,vx,vy,vz\n");
+}
 
 // Compute pairwise gravitational forces, naive O(N^2) algorithm
 void Simulation::computeForcesNaive() {
@@ -32,15 +38,18 @@ void Simulation::computeForcesNaive() {
     }
 }
 
-void Simulation::step(double dt) {
+void Simulation::step() {
     computeForcesNaive();
 
     for (auto& body: bodies) {
         Vec3 acceleration = (1.0 / body.mass) * body.force; // a = F / m
 
-        body.velocity += acceleration * dt; // v_new = v_old + a * dt
-        body.position += body.velocity * dt; // x_new = x_old + v * dt
+        body.velocity += acceleration * DT; // v_new = v_old + a * dt
+        body.position += body.velocity * DT; // x_new = x_old + v * dt
     }
+    // Write csv
+    write_line_csv();
+    stepnum++;
 }
 
 void Simulation::computeForcesBarnesHut(double theta) {
@@ -58,23 +67,40 @@ void Simulation::computeForcesBarnesHut(double theta) {
 
     // 3. Compute forces for each body using Barnes-Hut
     for (Body& b : bodies) {
-        computeForceFromNode(root, b, theta, G);
+        computeForceFromNode(root, b, theta);
     }
 
     delete(root);
 }
 
-void Simulation::stepBarnesHut(double dt, double theta) {
+void Simulation::stepBarnesHut(double theta) {
     // 1. Compute forces using Barnes-Hut
     computeForcesBarnesHut(theta);
 
     // 2. Update velocities
     for (Body& b : bodies) {
-        b.velocity += (b.force * (1.0 / b.mass)) * dt;
+        b.velocity += (b.force * (1.0 / b.mass)) * DT;
     }
 
     // 3. Update position
     for (Body& b : bodies) {
-        b.position += b.velocity * dt;
+        b.position += b.velocity * DT;
     }
+
+    // 4. Write csv
+    write_line_csv();
+    stepnum++;
+}
+
+void Simulation::write_line_csv(){
+    for (int j=0; j<bodies.size(); j++){
+        const Body b = bodies[j];
+                            //"step, time, body, m, x, y, z, vx, vy, vz"
+        fprintf(csv_file, "%i,%.4f,%i,%.2f,%.4f,%4f,%4f,%4f,%4f,%4f\n",
+                                stepnum, stepnum*DT, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
+    }
+}
+
+Simulation::~Simulation(){
+    fclose(csv_file);
 }

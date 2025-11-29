@@ -9,8 +9,6 @@
 int main(){
     // Test 1: simulate 1000 objects for 1000 steps 
     const int N = 10000; // Number of bodies
-    const double G = 1.0; // Gravitational constant, scaled units, don't use the real G here because it might lead to underflow
-    const double dt = 0.01; // Timestep size
     const int steps = 1000; // Number of timesteps to simulate
     const double theta = 0.5; // Threshold for Barnes-Hut
 
@@ -26,14 +24,14 @@ int main(){
 
     auto start = std::chrono::high_resolution_clock::now();
     // 3. Create two Simulation objects with the same initial state
-    Simulation simBH(bodies, G);
+    Simulation simBH(bodies);
 
     auto treebuild_end = std::chrono::high_resolution_clock::now();
     printf("Create tree for %i bodies took %li seconds \n", N, std::chrono::duration_cast<std::chrono::seconds>(treebuild_end - start).count());
     // 4. Run both simulations side-by-side
     for (int step = 0; step < steps; ++step) {
         // Advance one step with each method
-        simBH.stepBarnesHut(dt, theta); // Barnes-Hut
+        simBH.stepBarnesHut(theta); // Barnes-Hut
     }
     auto end = std::chrono::high_resolution_clock::now();
 

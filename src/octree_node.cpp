@@ -195,7 +195,7 @@ OctreeNode* buildOctree(std::vector<Body>& bodies) {
     return root;
 }
 
-void computeForceFromNode(const OctreeNode* node, Body& b, double theta, double G) {
+void computeForceFromNode(const OctreeNode* node, Body& b, double theta) {
     if (node == nullptr) {
         return;
     }
@@ -260,7 +260,7 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta, double 
     // If s / d > theta, recurse to children
     for (int i = 0; i < 8; ++i) {
         if (node->children[i] != nullptr) {
-            computeForceFromNode(node->children[i], b, theta, G);
+            computeForceFromNode(node->children[i], b, theta);
         }
     }
 }
