@@ -1,5 +1,37 @@
 # Barnes-Hut Simulation
 
+## Building and running the simulation
+
+//TODO for Zed: define concretely
+
+**Requirements**
+- gcc/g++ build tool
+- Make & CMake
+- python >= 3.10
+
+**Building**
+
+Clone the repo. In the project root directory run:
+```
+mkdir build && cd build && cmake .. && make
+```
+
+**Run the simulation**
+
+Run the simulation with:
+```
+./simulation
+```
+
+**Visualize**
+
+Install the requirements with
+```
+pip install -r requirements.txt
+```
+Then run the notebook 
+`visualize.ipynb`
+
 ## N-Body Simulation
 
 An `N-body simulation` is a way to model how N bodies interact with each other through forces. In this case, we want to approximate effect of `gravity` in the formation of gas clouds and clustering of stars over long periods of time. This will be done by simulating the `attractive forces between thousands of particles`.
@@ -18,18 +50,14 @@ If we have `N` bodies, in every frame, we will need to apply the forces on each 
 
 This faster algorithm is called the `Barnes-Hut algorithm`. The following explanation is based on the work of `Tom Ventimiglia` and `Kevin Wayne`: https://arborjs.org/docs/barnes-hut. 
 
-The crucial idea in speeding up the brute force N-body algorithm is to `group nearby bodies` and `approximate them as a single body`. Basically, if the group is `sufficiently far away` from the planet that we are looking at, we can approximate its gratitational effects by using its `center of mass`. Formally, if two bodies have `positions` $(x_1, y_1)$ and $(x_2, y_2)$, and `masses` $m_1$ and $m_2$, then their `total mass m` and `center of mass (x,y)` are given by:
+The crucial idea in speeding up the brute force N-body algorithm is to `group nearby bodies` and `approximate them as a single body`. Basically, if the group is `sufficiently far away` from the planet that we are looking at, we can approximate its gratitational effects by using its `center of mass`. Formally, for a system of $N$ bodies with masses $m_i$ located at $r_i$, the total mass $m$ and the coordinate of the center of mass $r_G$ are given by:
 
 $$
-m = m_1 + m_2 
-$$
-
-$$
-x = \frac{x_1m_1 + x_2m_2}{m}
+m = \sum_{i=1}^N m_i
 $$
 
 $$
-y = \frac{y_1m_1 + y_2m_2}{m}
+r_G = \frac{ \sum_{i=1}^N m_i r_i}{\sum_{i=1}^N m_i}
 $$
 
 The `Barnes-Hut algorithm` is a clever scheme for `grouping together bodies that are sufficiently nearby`. It recursively divides the set of bodies into groups by storing them into an `Octree`. The `topmost node` represents the whole space, and its `eight children` represent the `eight quadrants of the space`. The space is recursively subdivided until `each subdivision contains 0 or 1 bodies`. 
@@ -59,3 +87,4 @@ To calculate the net force acting on body `b`, use the following recursive proce
 2. Otherwise, calculate the ratio $\frac{s}{d}$. If $\frac{s}{d} < θ$, treat this internal node as a single body, and calculate the force it exerts on body `b`, and add this amount to `b`’s net force.
 
 3. Otherwise, run the procedure recursively on each of the current node’s children.
+
