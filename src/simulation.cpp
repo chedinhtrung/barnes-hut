@@ -93,6 +93,7 @@ void Simulation::stepBarnesHut(double theta) {
 }
 
 void Simulation::write_line_csv(){
+    if (csv_file == nullptr){return;}
     for (int j=0; j<bodies.size(); j++){
         const Body b = bodies[j];
                             //"step, time, body, m, x, y, z, vx, vy, vz"
@@ -102,5 +103,7 @@ void Simulation::write_line_csv(){
 }
 
 Simulation::~Simulation(){
-    fclose(csv_file);
+    if (csv_file != nullptr){
+        fclose(csv_file);
+    }
 }

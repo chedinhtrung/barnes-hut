@@ -25,7 +25,7 @@ public:
 private:
     int stepnum = 0;
     std::vector<Body> bodies;
-    FILE* csv_file;
+    FILE* csv_file = nullptr;
     void computeForcesNaive(); // Naive O(N^2) force computation
     void computeForcesBarnesHut(double theta); // Compute gravitational forces using the Barnes-Hut octree
 };

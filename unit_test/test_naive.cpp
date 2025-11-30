@@ -7,13 +7,10 @@
 #include "../src/initial_conditions.hpp"
 #include "../src/octree_node.hpp"
 
-int main(){
-    // Test 1: simulate 1000 objects for 1000 steps 
-    const int N = 10000; // Number of bodies
-    const int steps = 1000; // Number of timesteps to simulate
+void test_naive(int N, int steps, FILE* csv_file){
     const double theta = 0.5; // Threshold for Barnes-Hut
 
-    printf("Starting naive simulation %i bodies %i steps \n", N, steps);
+    printf("Starting simulation %i bodies %i steps \n", N, steps);
     // 2. Generate initial bodies
     std::vector<Body> bodies = randomInitialization(
         N,
@@ -25,17 +22,34 @@ int main(){
 
     auto start = std::chrono::high_resolution_clock::now();
     // 3. Create two Simulation objects with the same initial state
-    Simulation simNaive(bodies);
+    Simulation sim(bodies);
 
+    auto treebuild_end = std::chrono::high_resolution_clock::now();
+    printf("Create tree for %i bodies took %li seconds \n", N, std::chrono::duration_cast<std::chrono::seconds>(treebuild_end - start).count());
     // 4. Run both simulations side-by-side
     for (int step = 0; step < steps; ++step) {
-        // Advance one step with each method
-        simNaive.step(); // Barnes-Hut
+        // Advance one step 
+        sim.step(); // Barnes-Hut
     }
     auto end = std::chrono::high_resolution_clock::now();
-
-    printf("Simulated %i steps %i bodies took %li seconds \n", N, steps, std::chrono::duration_cast<std::chrono::seconds>(end - start).count());
-    
-    return 0;
-   
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    printf("Simulated %i steps %i bodies took %li seconds \n", N, steps, duration);
+    // Write csv
+    fprintf(csv_file, "%i,%li\n", N, duration);
 }
+
+int main(){
+    // Test Barnes Hut with increasing N to evaluate complexity
+    const int steps = 1000;
+    const char* result_file = "../unit_test/results/naive.csv";
+    FILE* file = fopen(result_file, "w");
+    fprintf(file, "N,time(secs)\n");
+    for (int i=1; i<=100; i++){
+        int N = 10*i;
+        printf("Starting simulation %i bodies %i steps \n", N, steps);
+        test_naive(N, steps, file);
+    }
+    fclose(file);
+    return 0;
+}   
+
