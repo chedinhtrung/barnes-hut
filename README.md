@@ -111,4 +111,4 @@ This will display the results of both the $O(N^2)$ naive simulation and the Barn
 - `simulation.cpp`, `simulation.hpp`: Defines the `Simulation` class, which evolves the system over time.
 - `main.cpp`: Entry point that runs the simulation.
 3. `unit_test/`: Unit tests for both the $O(N^2)$ naive simulation and the Barnes-Hut simulation.
-4. `visualization/`: Contains the Python notebook used to visualize the simulation results.
+4. `visualization/`: Contains the Python notebook used to visualize the simulation results..
