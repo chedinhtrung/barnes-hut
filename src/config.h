@@ -1,4 +1,3 @@
-
 #define G 1.0
 #define DT 0.01
 
