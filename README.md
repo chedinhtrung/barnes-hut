@@ -2,7 +2,7 @@
 
 ## Building and running the simulation
 
-//TODO for Zed: define concretely
+//TODO for Zed: define concretelyy
 
 **Requirements**
 - gcc/g++ build tool
