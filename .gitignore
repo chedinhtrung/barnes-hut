@@ -40,5 +40,21 @@
 # debug information files
 *.dwo
 
+build/
 venv/
 __pycache__/
+
+
+
+build/
+venv/
+__pycache__/
+
+
+
+build/
+venv/
+__pycache__/
+
+
+
