@@ -1,9 +1,11 @@
 #pragma once
 
 #include "body.hpp"
+#include "octree_space_divider.hpp"
 
 #include <vector>
 #include <fstream>
+#include <memory>
 
 /*
 Handle the time evolution of the system of bodies
@@ -30,6 +32,8 @@ private:
     double dt;
     std::vector<Body> bodies;
     FILE* csv_file = nullptr;
+
+    std::unique_ptr<SpaceDivider> spaceDivider; // For Barnes-Hut
 
     void computeForcesNaive(); // Naive O(N^2) force computation
     void computeForcesBarnesHut(double theta); // Compute gravitational forces using the Barnes-Hut octree

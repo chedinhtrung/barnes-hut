@@ -108,6 +108,8 @@ This will display the results of both the $O(N^2)$ naive simulation and the Barn
 - `initial_conditions.hpp`, `initial_conditions.cpp`: Defines how bodies are initially placed (currently random initialization).
 - `region.hpp`: Defines the `Region` class representing axis-aligned cubic regions in 3D space.
 - `octree_node.hpp`, `octree_node.cpp`: Defines the `OctreeNode` class used in the Barnes-Hut algorithm, along with supporting utilities.
+- `space_divider.hpp`: Declares an abstract interface for space-dividing strategies used in approximate force computation.
+- `octree_space_divider.hpp`, `octree_space_divider.cpp`: Implements the space-divider interface using an octree according to Barnes-Hut algorithm
 - `simulation.cpp`, `simulation.hpp`: Defines the `Simulation` class, which evolves the system over time.
 - `main.cpp`: Entry point that runs the simulation.
 3. `unit_test/`: Unit tests for both the $O(N^2)$ naive simulation and the Barnes-Hut simulation.
