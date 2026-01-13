@@ -2,7 +2,7 @@
 #include "octree_node.hpp"
 #include <cmath>
 
-Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath): bodies(std::move(bodies)){
+Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath): dt(dt_), bodies(std::move(bodies)){
     if (csv_filepath == nullptr){return;}
     // Open csv file
     csv_file = fopen(csv_filepath, "w");
@@ -44,8 +44,8 @@ void Simulation::step() {
     for (auto& body: bodies) {
         Vec3 acceleration = (1.0 / body.mass) * body.force; // a = F / m
 
-        body.velocity += acceleration * DT; // v_new = v_old + a * dt
-        body.position += body.velocity * DT; // x_new = x_old + v * dt
+        body.velocity += acceleration * dt; // v_new = v_old + a * dt
+        body.position += body.velocity * dt; // x_new = x_old + v * dt
     }
     // Write csv
     write_line_csv();
@@ -79,12 +79,12 @@ void Simulation::stepBarnesHut(double theta) {
 
     // 2. Update velocities
     for (Body& b : bodies) {
-        b.velocity += (b.force * (1.0 / b.mass)) * DT;
+        b.velocity += (b.force * (1.0 / b.mass)) * dt;
     }
 
     // 3. Update position
     for (Body& b : bodies) {
-        b.position += b.velocity * DT;
+        b.position += b.velocity * dt;
     }
 
     // 4. Write csv
@@ -98,7 +98,7 @@ void Simulation::write_line_csv(){
         const Body b = bodies[j];
                             //"step, time, body, m, x, y, z, vx, vy, vz"
         fprintf(csv_file, "%i,%.4f,%i,%.2f,%.4f,%4f,%4f,%4f,%4f,%4f\n",
-                                stepnum, stepnum*DT, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
+                                stepnum, stepnum*dt, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
     }
 }
 
