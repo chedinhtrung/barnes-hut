@@ -2,10 +2,14 @@
 #include "octree_node.hpp"
 #include <cmath>
 
-Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath): dt(dt_), bodies(std::move(bodies)){
+Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath): dt(dt_), bodies(std::move(bodies)) {
+    spaceDivider = std::make_unique<OctreeSpaceDivider>();
+
     if (csv_filepath == nullptr){return;}
+
     // Open csv file
     csv_file = fopen(csv_filepath, "w");
+
     // Write the head of the dataframe
     fprintf(csv_file, "step,time,body,m,x,y,z,vx,vy,vz\n");
 }
@@ -58,19 +62,12 @@ void Simulation::computeForcesBarnesHut(double theta) {
         b.force = Vec3{0.0, 0.0, 0.0};
     }
 
-    // 2. Build the octree
-    OctreeNode* root = buildOctree(bodies);
+    // 2. Build the octree and compute forces for each body using Barnes-Hut
+    spaceDivider->build(bodies);
 
-    if (root == nullptr) {
-        return; // No bodies
-    }
-
-    // 3. Compute forces for each body using Barnes-Hut
     for (Body& b : bodies) {
-        computeForceFromNode(root, b, theta);
+        spaceDivider->computeForce(b, theta);
     }
-
-    delete(root);
 }
 
 void Simulation::stepBarnesHut(double theta) {
