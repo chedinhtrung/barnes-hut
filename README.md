@@ -82,7 +82,7 @@ This will produce the simulation binary inside the build/ directory.
 
 After building, run the simulation with:
 ```
-./simulation
+./simulate
 ```
 This will generate output files used for visualization. 
 
