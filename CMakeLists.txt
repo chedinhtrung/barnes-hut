@@ -10,6 +10,7 @@ add_executable(simulate
     src/initial_conditions.cpp
     src/vec3.cpp
     src/octree_node.cpp
+    src/octree_space_divider.cpp
 )
 
 add_executable(test_barnes_hut
@@ -17,6 +18,7 @@ add_executable(test_barnes_hut
     src/initial_conditions.cpp
     src/octree_node.cpp
     src/vec3.cpp
+    src/octree_space_divider.cpp
     unit_test/test_barnes_hut.cpp
 )
 
@@ -25,5 +27,6 @@ add_executable(test_naive
     src/initial_conditions.cpp
     src/octree_node.cpp
     src/vec3.cpp
+    src/octree_space_divider.cpp
     unit_test/test_naive.cpp
 )

@@ -1,9 +1,12 @@
 #pragma once
 
-#include <vector>
 #include "body.hpp"
-#include "config.h"
+#include "octree_space_divider.hpp"
+
+#include <vector>
 #include <fstream>
+#include <memory>
+
 #include "forces.h"
 #include "octree_node.hpp"
 /*
@@ -12,7 +15,7 @@ Handle the time evolution of the system of bodies
 class Simulation {
 public:
     ForceField* forcefield;
-    Simulation(std::vector<Body> bodies, const char* csv_filepath=nullptr, ForceField* forcefield=nullptr);
+    Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath = nullptr, ForceField* forcefield=nullptr);
 
     // Advance in time
     void step();
@@ -22,13 +25,18 @@ public:
     const std::vector<Body>& getBodies() const {
         return bodies;
     }
+
     void write_line_csv();
+
     ~Simulation();
 
 private:
     int stepnum = 0;
+    double dt;
     std::vector<Body> bodies;
     FILE* csv_file = nullptr;
+
+    std::unique_ptr<SpaceDivider> spaceDivider; // For Barnes-Hut
 
     void computeForcesNaive(); // Naive O(N^2) force computation
     void computeForcesBarnesHut(double theta); // Compute gravitational forces using the Barnes-Hut octree

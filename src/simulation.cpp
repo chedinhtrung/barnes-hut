@@ -3,10 +3,14 @@
 #include <cmath>
 #include "forces.h"
 
-Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath, ForceField* forcefield): bodies(std::move(bodies)), forcefield(forcefield){
+Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath, ForceField* forcefield): dt(dt_), bodies(std::move(bodies)), forcefield(forcefield) {
+    spaceDivider = std::make_unique<OctreeSpaceDivider>();
+
     if (csv_filepath == nullptr){return;}
+
     // Open csv file
     csv_file = fopen(csv_filepath, "w");
+
     // Write the head of the dataframe
     fprintf(csv_file, "step,time,body,m,x,y,z,vx,vy,vz\n");
 }
@@ -46,8 +50,8 @@ void Simulation::step() {
     for (auto& body: bodies) {
         Vec3 acceleration = (1.0 / body.mass) * body.force; // a = F / m
 
-        body.velocity += acceleration * DT; // v_new = v_old + a * dt
-        body.position += body.velocity * DT; // x_new = x_old + v * dt
+        body.velocity += acceleration * dt; // v_new = v_old + a * dt
+        body.position += body.velocity * dt; // x_new = x_old + v * dt
     }
     // Write csv
     write_line_csv();
@@ -60,19 +64,12 @@ void Simulation::computeForcesBarnesHut(double theta) {
         b.force = Vec3{0.0, 0.0, 0.0};
     }
 
-    // 2. Build the octree
-    OctreeNode* root = buildOctree(bodies);
+    // 2. Build the octree and compute forces for each body using Barnes-Hut
+    spaceDivider->build(bodies);
 
-    if (root == nullptr) {
-        return; // No bodies
-    }
-
-    // 3. Compute forces for each body using Barnes-Hut
     for (Body& b : bodies) {
-        computeForceFromNode(root, b, theta, forcefield);
+        spaceDivider->computeForce(b, theta);
     }
-
-    delete(root);
 }
 
 void Simulation::stepBarnesHut(double theta) {
@@ -81,12 +78,12 @@ void Simulation::stepBarnesHut(double theta) {
 
     // 2. Update velocities
     for (Body& b : bodies) {
-        b.velocity += (b.force * (1.0 / b.mass)) * DT;
+        b.velocity += (b.force * (1.0 / b.mass)) * dt;
     }
 
     // 3. Update position
     for (Body& b : bodies) {
-        b.position += b.velocity * DT;
+        b.position += b.velocity * dt;
     }
 
     // 4. Write csv
@@ -100,7 +97,7 @@ void Simulation::write_line_csv(){
         const Body b = bodies[j];
                             //"step, time, body, m, x, y, z, vx, vy, vz"
         fprintf(csv_file, "%i,%.4f,%i,%.2f,%.4f,%4f,%4f,%4f,%4f,%4f\n",
-                                stepnum, stepnum*DT, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
+                                stepnum, stepnum*dt, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
     }
 }
 
