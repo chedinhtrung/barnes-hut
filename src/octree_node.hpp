@@ -67,7 +67,7 @@ Build an octree for the given bodies & return a pointer to the root node
 OctreeNode* buildOctree(std::vector<Body>& bodies);
 
 /*
-Helpver function to compute gravitational force from 'node' on body 'b'
+Helper function to compute gravitational force from 'node' on body 'b'
 
 theta is the threshold for s / d, G is the gravitational constant
 */
