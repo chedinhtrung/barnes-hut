@@ -28,17 +28,30 @@ int main() {
         5, // Velocity range: [-0.1, 0.1]
         1234 // Random seed
     );
+
+    std::vector<Body> bodies_bh_r3_gravity = galaxyInitialization(
+        N,
+        0.1, 0.5, // Mass range: [1, 10]
+        30, // Position range: [-10, 10]
+        5, // Velocity range: [-0.1, 0.1]
+        1234 // Random seed
+    );
+
+    ClassicalGravity classic_gfield = ClassicalGravity();
+    R3Gravity r3_gfield = R3Gravity();
     
     // 3. Create two Simulation objects with the same initial state
-    Simulation simBH(bodies_bh, BH_CSV);
-    Simulation simNaive(bodies_naive, NAIVE_CSV);
-    
+    Simulation simBH(bodies_bh, BH_CSV, &classic_gfield);
+    Simulation simNaive(bodies_naive, NAIVE_CSV, &classic_gfield);
+
+    Simulation simBH_R3Gravity(bodies_bh_r3_gravity, R3Gravity_BH_CSV, &r3_gfield);
 
     // 4. Run both simulations side-by-side
     for (int step = 0; step < steps; ++step) {
         // Advance one step with each method
         simBH.stepBarnesHut(theta); // Barnes-Hut
         simNaive.step(); // Naive
+        simBH_R3Gravity.stepBarnesHut(theta);
 
         // Dummy logging every 100 steps
         if (step % 100 == 0) {

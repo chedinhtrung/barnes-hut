@@ -1,8 +1,9 @@
 #include "simulation.hpp"
 #include "octree_node.hpp"
 #include <cmath>
+#include "forces.h"
 
-Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath): bodies(std::move(bodies)){
+Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath, ForceField* forcefield): bodies(std::move(bodies)), forcefield(forcefield){
     if (csv_filepath == nullptr){return;}
     // Open csv file
     csv_file = fopen(csv_filepath, "w");
@@ -23,15 +24,16 @@ void Simulation::computeForcesNaive() {
     // 2. Compute pairwise gravitational forces
     for (std::size_t i = 0; i < N; ++i) {
         for (std::size_t j = i + 1; j < N; ++j) { // Each body pair (i, j) is processed only once
-            Vec3 r = bodies[j].position - bodies[i].position;
-            double dist2 = norm2(r);
-            double dist = std::sqrt(dist2);
-            double invDist3 = 1.0 / (dist2 * dist);
+            Vec3 r = bodies[i].position - bodies[j].position;
 
-            // Compute gravitational force in vector form: fVec = (G * m1 * m2 / |r|^3) * r
-            double f = G * bodies[i].mass * bodies[j].mass * invDist3;
-            Vec3 fVec = f * r;
-
+            Vec3 fVec(0,0,0);
+            // Compute force
+            if (!forcefield){continue;}
+            switch (forcefield->type){
+                case GRAVITY:
+                    fVec = forcefield->gravity(bodies[i].mass, bodies[j].mass, r);
+            }
+           
             bodies[i].force += fVec;
             bodies[j].force -= fVec;
         }
@@ -50,6 +52,84 @@ void Simulation::step() {
     // Write csv
     write_line_csv();
     stepnum++;
+}
+
+void Simulation::computeForceFromNode(const OctreeNode* node, Body& b, double theta) {
+    if (node == nullptr) {
+        return;
+    }
+
+    if (node->mass <= 0.0) {
+        return;
+    }
+
+    if (!forcefield){return;}
+
+    // Vector from node's center of mass to body
+    Vec3 r = b.position - node->centerOfMass;
+
+    // Calculate distance from node to body b
+    const double softening = 1e-5; // Avoid division by 0 
+    double dist2 = norm2(r) + softening * softening;
+    double dist = std::sqrt(dist2);
+
+    // Avoid division by 0 if node is in the exact same position as b
+    if (dist == 0.0) {
+        return;
+    }
+
+    /*
+    Case 1: Node is leaf node
+
+    Calculate the force exerted by the current node on 'b' and add this amount to b’s net force
+    */
+    if (node->isLeaf()) {
+        // If this leaf's body is exactly the same as 'b', skip it because a body does not exert force on itself
+        if (node->body == &b || node->body == nullptr) {
+            return;
+        }
+
+        // Treat the node as a single body at centerOfMass with mass = node->mass & compute gravitational force in vector form: fVec = (G * m1 * m2 / |r|^3) * r
+        
+            // Compute force
+            Vec3 fVec(0,0,0);
+            switch (forcefield->type){
+                case GRAVITY:
+                    fVec = forcefield->gravity(b.mass, node->mass, r);
+            }
+        // Add this contribution to b.force
+        b.force += fVec;
+        return;
+    }
+
+    /*
+    Case 2: Node is internal node
+
+    Calculate the ratio s / d. If s / d < theta, treat this internal node as a single body, and calculate the force it exerts on body 'b', 
+    and add this amount to b’s net force.
+    */
+    double s = 2.0 * node->bounds.halfSize;
+    double ratio = s / dist;
+
+    if (ratio < theta) {
+        // Treat the whole cell as one body at its center of mass
+        Vec3 fVec(0,0,0);
+            // Compute force
+            switch (forcefield->type){
+                case GRAVITY:
+                    fVec = forcefield->gravity(b.mass, node->mass, r);
+            }
+        b.force += fVec;
+
+        return;
+    }
+
+    // If s / d > theta, recurse to children
+    for (int i = 0; i < 8; ++i) {
+        if (node->children[i] != nullptr) {
+            computeForceFromNode(node->children[i], b, theta);
+        }
+    }
 }
 
 void Simulation::computeForcesBarnesHut(double theta) {
