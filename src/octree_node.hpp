@@ -5,6 +5,7 @@
 #include "body.hpp"
 #include "region.hpp"
 #include "config.h"
+#include "forces.h"
 
 /*
 Each OctreeNode represents a region of space (a cube)
@@ -71,4 +72,4 @@ Helpver function to compute gravitational force from 'node' on body 'b'
 
 theta is the threshold for s / d, G is the gravitational constant
 */
-void computeForceFromNode(const OctreeNode* node, Body& b, double theta);
+void computeForceFromNode(const OctreeNode* node, Body& b, double theta, ForceField* forcefield);

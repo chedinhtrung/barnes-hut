@@ -1,8 +1,9 @@
 #include "simulation.hpp"
 #include "octree_node.hpp"
 #include <cmath>
+#include "forces.h"
 
-Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath): bodies(std::move(bodies)){
+Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath, ForceField* forcefield): bodies(std::move(bodies)), forcefield(forcefield){
     if (csv_filepath == nullptr){return;}
     // Open csv file
     csv_file = fopen(csv_filepath, "w");
@@ -23,15 +24,16 @@ void Simulation::computeForcesNaive() {
     // 2. Compute pairwise gravitational forces
     for (std::size_t i = 0; i < N; ++i) {
         for (std::size_t j = i + 1; j < N; ++j) { // Each body pair (i, j) is processed only once
-            Vec3 r = bodies[j].position - bodies[i].position;
-            double dist2 = norm2(r);
-            double dist = std::sqrt(dist2);
-            double invDist3 = 1.0 / (dist2 * dist);
+            Vec3 r = bodies[i].position - bodies[j].position;
 
-            // Compute gravitational force in vector form: fVec = (G * m1 * m2 / |r|^3) * r
-            double f = G * bodies[i].mass * bodies[j].mass * invDist3;
-            Vec3 fVec = f * r;
-
+            Vec3 fVec(0,0,0);
+            // Compute force
+            if (!forcefield){continue;}
+            switch (forcefield->type){
+                case GRAVITY:
+                    fVec = forcefield->gravity(bodies[i].mass, bodies[j].mass, r);
+            }
+           
             bodies[i].force += fVec;
             bodies[j].force -= fVec;
         }
@@ -67,7 +69,7 @@ void Simulation::computeForcesBarnesHut(double theta) {
 
     // 3. Compute forces for each body using Barnes-Hut
     for (Body& b : bodies) {
-        computeForceFromNode(root, b, theta);
+        computeForceFromNode(root, b, theta, forcefield);
     }
 
     delete(root);
