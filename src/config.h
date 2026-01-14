@@ -2,6 +2,7 @@
 
 // Simulation parameters
 constexpr double G = 1.0;
+constexpr double K = 1.0;
 constexpr std::size_t NUM_BODIES = 100;
 constexpr std::size_t NUM_STEPS = 5000;
 constexpr double DT = 0.01;
@@ -17,3 +18,4 @@ constexpr unsigned int SEED = 1234;
 // Output
 constexpr const char* NAIVE_CSV = "../results/naive.csv";
 constexpr const char* BH_CSV    = "../results/bh.csv";
+constexpr const char* R3Gravity_BH_CSV = "../results/r3gravity.csv";

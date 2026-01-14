@@ -12,9 +12,9 @@ void OctreeSpaceDivider::build(std::vector<Body>& bodies) {
     root = buildOctree(bodies);
 }
 
-void OctreeSpaceDivider::computeForce(Body& b, double theta) const {
+void OctreeSpaceDivider::computeForce(Body& b, double theta, ForceField* forcefield) const {
     if (!root) return;
 
     // Reuse the code from computeForceFromNote
-    computeForceFromNode(root, b, theta);
+    computeForceFromNode(root, b, theta, forcefield);
 }

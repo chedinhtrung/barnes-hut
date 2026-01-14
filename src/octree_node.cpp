@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <limits>
 #include <cmath>
+#include <iostream>
 
 void OctreeNode::insert(Body* b) {
     /*

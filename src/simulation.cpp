@@ -68,7 +68,7 @@ void Simulation::computeForcesBarnesHut(double theta) {
     spaceDivider->build(bodies);
 
     for (Body& b : bodies) {
-        spaceDivider->computeForce(b, theta);
+        spaceDivider->computeForce(b, theta, forcefield);
     }
 }
 

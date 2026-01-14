@@ -12,9 +12,9 @@ enum InteractionType {
 class ForceField {
     public:
     InteractionType type;
-    virtual Vec3 force() {return Vec3(0,0,0);};
-    virtual Vec3 gravity(float m1, float m2, Vec3 r){return Vec3(0,0,0);};
-    virtual Vec3 electric(float m1, float m2, Vec3 r){return Vec3(0,0,0);};
+    virtual Vec3 force() {return Vec3(0,0,0);}
+    virtual Vec3 gravity(float m1, float m2, Vec3 r){return Vec3(0,0,0);}
+    virtual Vec3 electric(float m1, float m2, Vec3 r){return Vec3(0,0,0);}
 };
 
 class Gravity : public ForceField
@@ -26,7 +26,8 @@ class Gravity : public ForceField
 class ClassicalGravity : public Gravity
 {
     public: 
-    Vec3 gravity(float m1, float m2, Vec3 r){
+    Vec3 gravity(float m1, float m2, Vec3 r) override 
+    {
         double dist2 = norm2(r) + softening * softening;
         double dist = std::sqrt(dist2);
         if (dist == 0.0) {

@@ -12,7 +12,7 @@ public:
     ~OctreeSpaceDivider() override;
 
     void build(std::vector<Body>& bodies) override;
-    void computeForce(Body& b, double theta) const override;
+    void computeForce(Body& b, double theta, ForceField* forcefield) const override;
 
 private:
     OctreeNode* root = nullptr;

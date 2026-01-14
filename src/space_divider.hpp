@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "body.hpp"
+#include "forces.h"
 
 /*
 Abstract the space dividing function: Each space dividing function has to do two of the followings:
@@ -16,5 +17,5 @@ public:
     virtual void build(std::vector<Body>& bodies) = 0;
 
     // Compute and accumulate force contribution onto one body -> In this project: Barnes-Hut
-    virtual void computeForce(Body& b, double theta) const = 0;
+    virtual void computeForce(Body& b, double theta, ForceField* forcefield) const = 0;
 };
