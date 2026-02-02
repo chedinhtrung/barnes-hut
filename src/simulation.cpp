@@ -94,7 +94,7 @@ void Simulation::stepBarnesHut(double theta) {
 
     // 3. Update position
     for (Body& b : bodies) {
-      
+        b.position += b.velocity * dt;
     }
     integration_timer.stop();
 
