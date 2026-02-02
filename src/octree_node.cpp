@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <limits>
 #include <cmath>
+#include <iostream>
 
 void OctreeNode::insert(Body* b) {
     /*
@@ -95,6 +96,14 @@ void OctreeNode::insert(Body* b) {
         }
 
         return;
+    }
+}
+
+
+OctreeNode::~OctreeNode(){
+    // recursively delete all the nodes in the tree (dont delete Bodies!)
+    for (OctreeNode* child:children){
+        delete(child);
     }
 }
 
@@ -195,7 +204,7 @@ OctreeNode* buildOctree(std::vector<Body>& bodies) {
     return root;
 }
 
-void computeForceFromNode(const OctreeNode* node, Body& b, double theta) {
+void computeForceFromNode(const OctreeNode* node, Body& b, double theta, ForceField* forcefield) {
     if (node == nullptr) {
         return;
     }
@@ -204,8 +213,10 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta) {
         return;
     }
 
-    // Vector from body b to the node's center of mass
-    Vec3 r = node->centerOfMass - b.position;
+    if (!forcefield){return;}
+
+    // Vector from node's center of mass to body
+    Vec3 r = b.position - node->centerOfMass;
 
     // Calculate distance from node to body b
     const double softening = 1e-5; // Avoid division by 0 
@@ -229,10 +240,13 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta) {
         }
 
         // Treat the node as a single body at centerOfMass with mass = node->mass & compute gravitational force in vector form: fVec = (G * m1 * m2 / |r|^3) * r
-        double invDist3 = 1.0 / (dist2 * dist);
-        double f = G * b.mass * node->mass * invDist3;
-        Vec3 fVec = f * r; // Force in vector form
-
+        
+            // Compute force
+            Vec3 fVec(0,0,0);
+            switch (forcefield->type){
+                case GRAVITY:
+                    fVec = forcefield->gravity(b.mass, node->mass, r);
+            }
         // Add this contribution to b.force
         b.force += fVec;
         return;
@@ -249,9 +263,12 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta) {
 
     if (ratio < theta) {
         // Treat the whole cell as one body at its center of mass
-        double invDist3 = 1.0 / (dist2 * dist);
-        double f = G * b.mass * node->mass * invDist3;
-        Vec3 fVec = f * r;
+        Vec3 fVec(0,0,0);
+            // Compute force
+            switch (forcefield->type){
+                case GRAVITY:
+                    fVec = forcefield->gravity(b.mass, node->mass, r);
+            }
         b.force += fVec;
 
         return;
@@ -260,14 +277,7 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta) {
     // If s / d > theta, recurse to children
     for (int i = 0; i < 8; ++i) {
         if (node->children[i] != nullptr) {
-            computeForceFromNode(node->children[i], b, theta);
+            computeForceFromNode(node->children[i], b, theta, forcefield);
         }
-    }
-}
-
-OctreeNode::~OctreeNode(){
-    // recursively delete all the nodes in the tree (dont delete Bodies!)
-    for (OctreeNode* child:children){
-        delete(child);
     }
 }

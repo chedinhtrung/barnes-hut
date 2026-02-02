@@ -24,7 +24,8 @@ void test_barnes_hut(int N, int steps, FILE* csv_file){
     auto start = std::chrono::high_resolution_clock::now();
 
     // 3. Create two Simulation objects with the same initial state
-    Simulation simBH(bodies);
+    const double dt = 0.01;
+    Simulation simBH(bodies, dt);
 
     auto treebuild_end = std::chrono::high_resolution_clock::now();
     printf("Create tree for %i bodies took %li seconds \n", N, std::chrono::duration_cast<std::chrono::seconds>(treebuild_end - start).count());

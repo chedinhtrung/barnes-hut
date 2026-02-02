@@ -1,11 +1,16 @@
 #include "simulation.hpp"
 #include "octree_node.hpp"
 #include <cmath>
+#include "forces.h"
 
-Simulation::Simulation(std::vector<Body> bodies, const char* csv_filepath): bodies(std::move(bodies)){
+Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath, ForceField* forcefield): dt(dt_), bodies(std::move(bodies)), forcefield(forcefield) {
+    spaceDivider = std::make_unique<OctreeSpaceDivider>();
+
     if (csv_filepath == nullptr){return;}
+
     // Open csv file
     csv_file = fopen(csv_filepath, "w");
+
     // Write the head of the dataframe
     fprintf(csv_file, "step,time,body,m,x,y,z,vx,vy,vz\n");
 }
@@ -23,15 +28,16 @@ void Simulation::computeForcesNaive() {
     // 2. Compute pairwise gravitational forces
     for (std::size_t i = 0; i < N; ++i) {
         for (std::size_t j = i + 1; j < N; ++j) { // Each body pair (i, j) is processed only once
-            Vec3 r = bodies[j].position - bodies[i].position;
-            double dist2 = norm2(r);
-            double dist = std::sqrt(dist2);
-            double invDist3 = 1.0 / (dist2 * dist);
+            Vec3 r = bodies[i].position - bodies[j].position;
 
-            // Compute gravitational force in vector form: fVec = (G * m1 * m2 / |r|^3) * r
-            double f = G * bodies[i].mass * bodies[j].mass * invDist3;
-            Vec3 fVec = f * r;
-
+            Vec3 fVec(0,0,0);
+            // Compute force
+            if (!forcefield){continue;}
+            switch (forcefield->type){
+                case GRAVITY:
+                    fVec = forcefield->gravity(bodies[i].mass, bodies[j].mass, r);
+            }
+           
             bodies[i].force += fVec;
             bodies[j].force -= fVec;
         }
@@ -44,8 +50,8 @@ void Simulation::step() {
     for (auto& body: bodies) {
         Vec3 acceleration = (1.0 / body.mass) * body.force; // a = F / m
 
-        body.velocity += acceleration * DT; // v_new = v_old + a * dt
-        body.position += body.velocity * DT; // x_new = x_old + v * dt
+        body.velocity += acceleration * dt; // v_new = v_old + a * dt
+        body.position += body.velocity * dt; // x_new = x_old + v * dt
     }
     // Write csv
     write_line_csv();
@@ -58,19 +64,12 @@ void Simulation::computeForcesBarnesHut(double theta) {
         b.force = Vec3{0.0, 0.0, 0.0};
     }
 
-    // 2. Build the octree
-    OctreeNode* root = buildOctree(bodies);
+    // 2. Build the octree and compute forces for each body using Barnes-Hut
+    spaceDivider->build(bodies);
 
-    if (root == nullptr) {
-        return; // No bodies
-    }
-
-    // 3. Compute forces for each body using Barnes-Hut
     for (Body& b : bodies) {
-        computeForceFromNode(root, b, theta);
+        spaceDivider->computeForce(b, theta, forcefield);
     }
-
-    delete(root);
 }
 
 void Simulation::stepBarnesHut(double theta) {
@@ -79,12 +78,12 @@ void Simulation::stepBarnesHut(double theta) {
 
     // 2. Update velocities
     for (Body& b : bodies) {
-        b.velocity += (b.force * (1.0 / b.mass)) * DT;
+        b.velocity += (b.force * (1.0 / b.mass)) * dt;
     }
 
     // 3. Update position
     for (Body& b : bodies) {
-        b.position += b.velocity * DT;
+        b.position += b.velocity * dt;
     }
 
     // 4. Write csv
@@ -98,7 +97,7 @@ void Simulation::write_line_csv(){
         const Body b = bodies[j];
                             //"step, time, body, m, x, y, z, vx, vy, vz"
         fprintf(csv_file, "%i,%.4f,%i,%.2f,%.4f,%4f,%4f,%4f,%4f,%4f\n",
-                                stepnum, stepnum*DT, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
+                                stepnum, stepnum*dt, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
     }
 }
 
