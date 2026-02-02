@@ -2,8 +2,10 @@
 #include "octree_node.hpp"
 #include <cmath>
 #include "forces.h"
+#include "timer.h"
 
-Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath, ForceField* forcefield): dt(dt_), bodies(std::move(bodies)), forcefield(forcefield) {
+Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_filepath, ForceField* forcefield, const char* name): 
+                        dt(dt_), bodies(std::move(bodies)), forcefield(forcefield), name(name) {
     spaceDivider = std::make_unique<OctreeSpaceDivider>();
 
     if (csv_filepath == nullptr){return;}
@@ -64,12 +66,20 @@ void Simulation::computeForcesBarnesHut(double theta) {
         b.force = Vec3{0.0, 0.0, 0.0};
     }
 
+    build_tree_timer.start();
+
     // 2. Build the octree and compute forces for each body using Barnes-Hut
     spaceDivider->build(bodies);
+
+    build_tree_timer.stop();
+
+    compute_force_timer.start();
 
     for (Body& b : bodies) {
         spaceDivider->computeForce(b, theta, forcefield);
     }
+
+    compute_force_timer.stop();
 }
 
 void Simulation::stepBarnesHut(double theta) {
@@ -87,7 +97,12 @@ void Simulation::stepBarnesHut(double theta) {
     }
 
     // 4. Write csv
+    file_write_timer.start();
+    
     write_line_csv();
+
+    file_write_timer.stop();
+    
     stepnum++;
 }
 
@@ -105,4 +120,10 @@ Simulation::~Simulation(){
     if (csv_file != nullptr){
         fclose(csv_file);
     }
+
+    // print the performance timer results  
+    printf("Simulation %s,   %i bodies \n\n", name, bodies.size());
+    build_tree_timer.print_end_results();
+    compute_force_timer.print_end_results();
+    file_write_timer.print_end_results();
 }
