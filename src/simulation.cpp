@@ -86,15 +86,17 @@ void Simulation::stepBarnesHut(double theta) {
     // 1. Compute forces using Barnes-Hut
     computeForcesBarnesHut(theta);
 
-    // 2. Update velocities
+    integration_timer.start();
+    // 2. Update velocities + position
     for (Body& b : bodies) {
         b.velocity += (b.force * (1.0 / b.mass)) * dt;
     }
 
     // 3. Update position
     for (Body& b : bodies) {
-        b.position += b.velocity * dt;
+      
     }
+    integration_timer.stop();
 
     // 4. Write csv
     file_write_timer.start();
@@ -126,4 +128,5 @@ Simulation::~Simulation(){
     build_tree_timer.print_end_results();
     compute_force_timer.print_end_results();
     file_write_timer.print_end_results();
+    integration_timer.print_end_results();
 }

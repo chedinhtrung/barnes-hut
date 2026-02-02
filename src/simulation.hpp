@@ -48,4 +48,6 @@ private:
     Timer build_tree_timer = Timer("Build Tree");
     Timer compute_force_timer = Timer("Compute Force"); 
     Timer file_write_timer = Timer("Write CSV");
+    Timer integration_timer = Timer("P + V Update"); 
+    Timer total_run_timer = Timer("Total");
 };

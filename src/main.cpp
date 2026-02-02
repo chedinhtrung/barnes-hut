@@ -6,9 +6,14 @@
 #include "initial_conditions.hpp"
 #include "octree_node.hpp"
 #include "config.h"
+#include "timer.h"
 
 int main() {
     // 1. Generate initial bodies
+
+    Timer init_timer = Timer("Initialization");
+    
+    init_timer.start();
     std::vector<Body> bodies_naive = galaxyInitialization(
         NUM_BODIES,
         MASS_MIN, MASS_MAX, // Mass range: [1, 10]
@@ -16,7 +21,9 @@ int main() {
         VELOCITY_RANGE, // Velocity range: [-0.1, 0.1]
         SEED // Random seed
     );
+    init_timer.stop();
 
+    init_timer.start();
     std::vector<Body> bodies_bh = galaxyInitialization(
         NUM_BODIES,
         MASS_MIN, MASS_MAX, // Mass range: [1, 10]
@@ -24,7 +31,9 @@ int main() {
         VELOCITY_RANGE, // Velocity range: [-0.1, 0.1]
         SEED // Random seed
     );
+    init_timer.stop();
 
+    init_timer.start();
     std::vector<Body> bodies_bh_r3_gravity = galaxyInitialization(
         NUM_BODIES,
         MASS_MIN, MASS_MAX, // Mass range: [1, 10]
@@ -32,6 +41,7 @@ int main() {
         VELOCITY_RANGE, // Velocity range: [-0.1, 0.1]
         SEED // Random seed
     );
+    init_timer.stop();
 
     ClassicalGravity classic_gfield = ClassicalGravity();
     R3Gravity r3_gfield = R3Gravity();
@@ -55,5 +65,6 @@ int main() {
         }
     }
 
+    init_timer.print_end_results();
     return 0;
 }
