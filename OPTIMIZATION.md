@@ -37,7 +37,7 @@ Stage: P + V Update   Samples: 5000,     Mean Duration: 0.007046 ms
 ### Optimization 2: Multithreading for force computation
 (commit hash `4d42321fcfab4e86b03d945f4b09eb356eb443b0`)
 
-Since force computation does not change the state of the tree and can be computed concurrently for each object, ` #pragma omp parallel` is used to enable multithreading in force computation. 
+Since force computation does not change the state of the tree and can be computed concurrently for each body, ` #pragma omp parallel` is used to enable multithreading in force computation. 
 
 ```
 Simulation BH Classic Gravity,   202 bodies 
@@ -47,6 +47,8 @@ Stage: Compute Force   Samples: 5000,     Mean Duration: 0.301688 ms  <- -1.06 m
 Stage: Write CSV       Samples: 5000,     Mean Duration: 0.406467 ms 
 Stage: P + V Update    Samples: 5000,     Mean Duration: 0.002008 ms 
 ```
+
+Note that space division cannot be parallelized since it is strictly sequential: how the current body is added affects how other bodies are added later.
 
 ### Optimization 3: Vectorization for position & velocity updates
 (commit hash `4d42321fcfab4e86b03d945f4b09eb356eb443b0`)
