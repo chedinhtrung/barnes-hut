@@ -206,18 +206,15 @@ OctreeNode* buildOctree(std::vector<Body>& bodies) {
 }
 
 void computeForceFromNode(const OctreeNode* node, Body& b, double theta, ForceField* forcefield) {
-    if (node == nullptr) {
-        return;
-    }
+    if (!node || !forcefield) return;
 
-    if (node->mass <= 0.0) {
-        return;
-    }
+    // Only care about gravity in this run, avoid using switch
 
-    if (!forcefield){return;}
+    const double m = node->mass;
+    if (m <= 0.0) return;
 
     // Vector from node's center of mass to body
-    Vec3 r = b.position - node->centerOfMass;
+    const Vec3 r = b.position - node->centerOfMass;
 
     // Calculate distance from node to body b
     const double softening = 1e-5; // Avoid division by 0 
@@ -234,10 +231,9 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta, ForceFi
     Calculate the force exerted by the current node on 'b' and add this amount to b’s net force
     */
     if (node->isLeaf()) {
+        const Body* other = node->body;
         // If this leaf's body is exactly the same as 'b', skip it because a body does not exert force on itself
-        if (node->body == &b || node->body == nullptr) {
-            return;
-        }
+        if (!other || other == &b) return; 
 
         // Treat the node as a single body at centerOfMass with mass = node->mass & compute gravitational force in vector form: fVec = (G * m1 * m2 / |r|^3) * r
         
@@ -269,9 +265,7 @@ void computeForceFromNode(const OctreeNode* node, Body& b, double theta, ForceFi
 
     // If s / d > theta, recurse to children
     for (int i = 0; i < 8; ++i) {
-        OctreeNode* child_i = node->children[i];
-        if (child_i != nullptr) {
-            computeForceFromNode(child_i, b, theta, forcefield);
-        }
+        const OctreeNode* child = node->children[i];
+        if (child) computeForceFromNode(child, b, theta, forcefield);
     }
 }

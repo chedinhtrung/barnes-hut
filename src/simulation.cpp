@@ -75,6 +75,7 @@ void Simulation::computeForcesBarnesHut(double theta) {
 
     compute_force_timer.start();
 
+    #pragma omp parallel for schedule (static)
     for (Body& b : bodies) {
         spaceDivider->computeForce(b, theta, forcefield);
     }
@@ -87,14 +88,20 @@ void Simulation::stepBarnesHut(double theta) {
     computeForcesBarnesHut(theta);
 
     integration_timer.start();
-    // 2. Update velocities + position
-    for (Body& b : bodies) {
-        b.velocity += (b.force * (1.0 / b.mass)) * dt;
-    }
+    #pragma omp simd 
+    for (std::size_t i = 0; i < bodies.size(); ++i) {
+        Body& b = bodies[i];
 
-    // 3. Update position
-    for (Body& b : bodies) {
-       b.position += b.velocity * dt;
+        const double invMassDt = dt / b.mass;  
+
+        // Avoid Vec3 operations, write as plain doubles for vectorization
+        b.velocity.x += b.force.x * invMassDt;
+        b.velocity.y += b.force.y * invMassDt;
+        b.velocity.z += b.force.z * invMassDt;
+
+        b.position.x += b.velocity.x * dt;
+        b.position.y += b.velocity.y * dt;
+        b.position.z += b.velocity.z * dt;
     }
     integration_timer.stop();
 

@@ -9,10 +9,9 @@
 #include "timer.h"
 
 int main() {
-    // 1. Generate initial bodies
-
     Timer init_timer = Timer("Initialization");
     
+    // 1. Generate initial bodies
     init_timer.start();
     std::vector<Body> bodies_naive = galaxyInitialization(
         NUM_BODIES,
