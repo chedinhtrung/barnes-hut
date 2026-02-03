@@ -11,10 +11,10 @@ Simulation::Simulation(std::vector<Body> bodies, double dt_, const char* csv_fil
     if (csv_filepath == nullptr){return;}
 
     // Open csv file
-    csv_file = fopen(csv_filepath, "w");
+    csv_file = fopen(csv_filepath, "wb");
 
     // Write the head of the dataframe
-    fprintf(csv_file, "step,time,body,m,x,y,z,vx,vy,vz\n");
+    //fprintf(csv_file, "step,body,x,y,z\n");   // legacy. Now writing binary
 }
 
 // Compute pairwise gravitational forces, naive O(N^2) algorithm
@@ -56,7 +56,7 @@ void Simulation::step() {
         body.position += body.velocity * dt; // x_new = x_old + v * dt
     }
     // Write csv
-    write_line_csv();
+    write_results_bin();
     stepnum++;
 }
 
@@ -94,14 +94,14 @@ void Simulation::stepBarnesHut(double theta) {
 
     // 3. Update position
     for (Body& b : bodies) {
-      
+       b.position += b.velocity * dt;
     }
     integration_timer.stop();
 
     // 4. Write csv
     file_write_timer.start();
     
-    write_line_csv();
+    write_results_bin();
 
     file_write_timer.stop();
     
@@ -113,8 +113,17 @@ void Simulation::write_line_csv(){
     for (int j=0; j<bodies.size(); j++){
         const Body b = bodies[j];
                             //"step, time, body, m, x, y, z, vx, vy, vz"
-        fprintf(csv_file, "%i,%.4f,%i,%.2f,%.4f,%4f,%4f,%4f,%4f,%4f\n",
-                                stepnum, stepnum*dt, j, b.mass, b.position.x, b.position.y, b.position.z, b.velocity.x, b.velocity.y, b.velocity.z);
+        fprintf(csv_file, "%i,%i,%.4f,%4f,%4f\n",
+                                stepnum, j, b.position.x, b.position.y, b.position.z);
+    }
+}
+
+void Simulation::write_results_bin(){
+    if (csv_file == nullptr){return;}
+    for (int j=0; j<bodies.size(); j++){
+        const Body b = bodies[j];
+        Result r = {.body_id=j, .step=stepnum, .pos=b.position};
+        fwrite(&r, sizeof(r), 1, csv_file);
     }
 }
 

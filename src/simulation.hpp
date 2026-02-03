@@ -13,6 +13,13 @@
 /*
 Handle the time evolution of the system of bodies
 */
+
+typedef struct {
+    uint32_t body_id; 
+    uint32_t step;
+    Vec3 pos;
+} Result;
+
 class Simulation {
 public:
     ForceField* forcefield;
@@ -30,6 +37,7 @@ public:
     }
 
     void write_line_csv();
+    void write_results_bin();
 
     ~Simulation();
 
@@ -47,7 +55,7 @@ private:
     // Timer objects for measuring computation time
     Timer build_tree_timer = Timer("Build Tree");
     Timer compute_force_timer = Timer("Compute Force"); 
-    Timer file_write_timer = Timer("Write CSV");
+    Timer file_write_timer = Timer("Write Results");
     Timer integration_timer = Timer("P + V Update"); 
     Timer total_run_timer = Timer("Total");
 };

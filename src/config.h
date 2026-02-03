@@ -16,6 +16,6 @@ constexpr double VELOCITY_RANGE = 5.0;
 constexpr unsigned int SEED = 1234;
 
 // Output
-constexpr const char* NAIVE_CSV = "../results/naive.csv";
-constexpr const char* BH_CSV    = "../results/bh.csv";
-constexpr const char* R3Gravity_BH_CSV = "../results/r3gravity.csv";
+constexpr const char* NAIVE_CSV = "../results/naive.bin";
+constexpr const char* BH_CSV    = "../results/bh.bin";
+constexpr const char* R3Gravity_BH_CSV = "../results/r3gravity.bin";

@@ -1,0 +1,9 @@
+Simulation BH Classic Gravity,   202 bodies 
+
+Stage: Build Tree    Samples: 5000,     Mean Duration: 0.148731 ms 
+
+Stage: Compute Force    Samples: 5000,     Mean Duration: 1.537288 ms 
+
+Stage: Write CSV    Samples: 5000,     Mean Duration: 0.275356 ms 
+
+Stage: P + V Update    Samples: 5000,     Mean Duration: 0.006204 ms 
